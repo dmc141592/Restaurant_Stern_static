@@ -1,0 +1,16 @@
+# Netlify deployment for the frontend only (apps/web). The backend is
+# deployed separately (see README "Deployment" section). Base stays at the
+# repo root so the npm workspace commands can resolve packages/shared.
+[build]
+  command = "npm ci && npm run build --workspace packages/shared && npm run build --workspace apps/web"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA fallback: all client-side routes (e.g. /reservation, /admin/reservationen)
+# must resolve to index.html so React Router can take over.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

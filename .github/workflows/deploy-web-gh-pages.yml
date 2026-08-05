@@ -1,0 +1,58 @@
+name: Deploy frontend to GitHub Pages
+
+# Optional alternative to Netlify (see README "Deployment" section).
+# Requires: Settings -> Pages -> Source = "GitHub Actions".
+# Set the VITE_API_BASE_URL repository variable to your deployed backend URL,
+# and VITE_BASE if this repo is served from a subpath (https://user.github.io/repo/).
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/shared/**'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build --workspace packages/shared
+      - name: Build frontend
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+        run: npx vite build --base "${{ vars.VITE_BASE || '/' }}"
+        working-directory: apps/web
+      # GitHub Pages has no server-side SPA rewrite: duplicating index.html as
+      # 404.html lets any deep link still load the app shell client-side.
+      - run: cp dist/index.html dist/404.html
+        working-directory: apps/web
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
