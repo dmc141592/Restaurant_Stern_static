@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sternen-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sternen
+      POSTGRES_PASSWORD: sternen_dev_password
+      POSTGRES_DB: sternen
+    ports:
+      # Host port 5433 to avoid clashing with a locally installed PostgreSQL
+      # (which commonly already occupies 5432) or another project's container.
+      - '5433:5432'
+    volumes:
+      - sternen_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sternen -d sternen']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: sternen-mailpit
+    restart: unless-stopped
+    ports:
+      - '8025:8025'
+      - '1025:1025'
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    container_name: sternen-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - apps/api/.env
+    ports:
+      - '4000:4000'
+
+volumes:
+  sternen_pgdata:
