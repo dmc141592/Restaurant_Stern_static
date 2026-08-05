@@ -1,0 +1,517 @@
+openapi: 3.1.0
+info:
+  title: Restaurant Sternen Albisrieden — Reservations-API
+  version: 0.1.0
+  description: >
+    Öffentliche und administrative API für das Online-Reservationssystem,
+    die Eventverwaltung und die vorbereitete Kassenintegration. Fehlerantworten
+    folgen überall demselben Format (siehe ApiError).
+servers:
+  - url: http://localhost:4000
+    description: Lokale Entwicklung
+tags:
+  - name: System
+  - name: Öffentlich
+  - name: Reservationsaktionen
+  - name: Admin – Authentisierung
+  - name: Admin – Reservationen
+  - name: Admin – Bereiche
+  - name: Admin – Sperrungen
+  - name: Admin – Öffnungszeiten
+  - name: Admin – Events
+  - name: Kassenintegration
+
+components:
+  securitySchemes:
+    adminSession:
+      type: apiKey
+      in: cookie
+      name: sternen_admin_session
+    posApiKey:
+      type: http
+      scheme: bearer
+      description: "Bearer <api-key>, erzeugt via `npm run apikey:create --workspace apps/api`."
+
+  schemas:
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code: { type: string, example: AVAILABILITY_CONFLICT }
+            message: { type: string }
+            requestId: { type: string }
+            details: { type: object }
+
+    Area:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: [string, "null"] }
+        resourceMode: { type: string, enum: [CAPACITY, EXCLUSIVE] }
+        capacity: { type: integer }
+        defaultDurationMinutes: { type: integer }
+        slotIntervalMinutes: { type: integer }
+        isActive: { type: boolean }
+        isOnlineBookable: { type: boolean }
+        sortOrder: { type: integer }
+
+    AvailabilityResponse:
+      type: object
+      properties:
+        requestedStart: { type: string, format: date-time }
+        durationMinutes: { type: integer }
+        recommendation:
+          type: ["object", "null"]
+          properties:
+            areaId: { type: string, format: uuid }
+            areaName: { type: string }
+            availableCapacity: { type: integer }
+        alternatives:
+          type: array
+          items:
+            type: object
+            properties:
+              areaId: { type: string, format: uuid }
+              areaName: { type: string }
+              availableCapacity: { type: integer }
+
+    CreateReservationRequest:
+      type: object
+      required:
+        [guestFirstName, guestLastName, guestEmail, guestPhone, partySize, localDate, localTime, privacyAccepted]
+      properties:
+        guestFirstName: { type: string, minLength: 2, maxLength: 80 }
+        guestLastName: { type: string, minLength: 2, maxLength: 80 }
+        guestEmail: { type: string, format: email }
+        guestPhone: { type: string }
+        partySize: { type: integer, minimum: 1 }
+        localDate: { type: string, example: "2026-08-15" }
+        localTime: { type: string, example: "19:00" }
+        preferredAreaId: { type: string, format: uuid }
+        guestNotes: { type: string, maxLength: 1000 }
+        privacyAccepted: { type: boolean, enum: [true] }
+
+    CreateReservationResponse:
+      type: object
+      properties:
+        reservation:
+          type: object
+          properties:
+            reference: { type: string, example: "STERNEN-2026-AB12CD" }
+            status: { type: string, enum: [PENDING, CONFIRMED, REJECTED, CANCELLED] }
+            statusLabel: { type: string }
+            area:
+              type: object
+              properties: { id: { type: string, format: uuid }, name: { type: string } }
+            startsAt: { type: string, format: date-time }
+            endsAt: { type: string, format: date-time }
+            partySize: { type: integer }
+        message: { type: string }
+
+    EventDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        title: { type: string }
+        summary: { type: string }
+        description: { type: [string, "null"] }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        isPublished: { type: boolean }
+        areas:
+          type: array
+          items:
+            type: object
+            properties: { id: { type: string, format: uuid }, name: { type: string } }
+
+    AdminReservationDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        reference: { type: string }
+        status: { type: string, enum: [PENDING, CONFIRMED, REJECTED, CANCELLED] }
+        statusLabel: { type: string }
+        source: { type: string, enum: [ONLINE, ADMIN, POS_API] }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        partySize: { type: integer }
+        area: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        requestedArea:
+          type: ["object", "null"]
+          properties: { id: { type: string }, name: { type: string } }
+        areaWasAutoAssigned: { type: boolean }
+        guest:
+          type: object
+          properties:
+            firstName: { type: string }
+            lastName: { type: string }
+            email: { type: string }
+            phone: { type: string }
+        notes: { type: [string, "null"] }
+
+    PosReservationDto:
+      allOf:
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            reference: { type: string }
+            status: { type: string, enum: [PENDING, CONFIRMED, REJECTED, CANCELLED] }
+            startsAt: { type: string, format: date-time }
+            endsAt: { type: string, format: date-time }
+            partySize: { type: integer }
+            area: { type: object, properties: { id: { type: string }, name: { type: string } } }
+            guest:
+              type: object
+              properties:
+                firstName: { type: string }
+                lastName: { type: string }
+                email: { type: string }
+                phone: { type: string }
+            notes: { type: [string, "null"] }
+            updatedAt: { type: string, format: date-time }
+
+    CursorPage:
+      type: object
+      properties:
+        data: { type: array, items: {} }
+        pagination:
+          type: object
+          properties:
+            nextCursor: { type: [string, "null"] }
+
+paths:
+  /health/live:
+    get:
+      tags: [System]
+      summary: Liveness-Check
+      responses:
+        "200": { description: OK }
+
+  /health/ready:
+    get:
+      tags: [System]
+      summary: Readiness-Check (inkl. Datenbankverbindung)
+      responses:
+        "200": { description: OK }
+        "503": { description: Datenbank nicht erreichbar }
+
+  /api/v1/public/areas:
+    get:
+      tags: [Öffentlich]
+      summary: Aktive, online buchbare Bereiche
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Area" } }
+
+  /api/v1/public/availability:
+    get:
+      tags: [Öffentlich]
+      summary: Verfügbarkeits-Vorschau (keine personenbezogenen Daten)
+      parameters:
+        - { name: date, in: query, required: true, schema: { type: string }, example: "2026-08-15" }
+        - { name: time, in: query, required: true, schema: { type: string }, example: "19:00" }
+        - { name: partySize, in: query, required: true, schema: { type: integer } }
+        - { name: preferredAreaId, in: query, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AvailabilityResponse" }
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ApiError" } }
+
+  /api/v1/public/reservations:
+    post:
+      tags: [Öffentlich]
+      summary: Reservationsanfrage erstellen
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema: { type: string }
+          description: Verhindert doppelte Reservationen bei Doppelklick/Retry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateReservationRequest" }
+      responses:
+        "201":
+          description: Reservation erstellt (Status PENDING)
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/CreateReservationResponse" } }
+        "409":
+          description: Keine Kapazität / ausserhalb Öffnungszeiten / Bereich gesperrt
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ApiError" } }
+
+  /api/v1/public/events:
+    get:
+      tags: [Öffentlich]
+      summary: Veröffentlichte, noch nicht vergangene Events
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/EventDto" } }
+
+  /api/v1/public/events/{slug}:
+    get:
+      tags: [Öffentlich]
+      summary: Einzelnes veröffentlichtes Event
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/EventDto" } }
+        "404": { description: Nicht gefunden oder nicht veröffentlicht }
+
+  /api/v1/reservation-actions/{token}:
+    get:
+      tags: [Reservationsaktionen]
+      summary: Vorschau (rein lesend, löst keine Statusänderung aus)
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+        "404":
+          description: Ungültiger/abgelaufener Token
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ApiError" } }
+
+  /api/v1/reservation-actions/{token}/confirm:
+    post:
+      tags: [Reservationsaktionen]
+      summary: Reservation bestätigen (idempotent bei erneutem Aufruf)
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+        "404": { description: Ungültiger/abgelaufener Token }
+
+  /api/v1/reservation-actions/{token}/reject:
+    post:
+      tags: [Reservationsaktionen]
+      summary: Reservation ablehnen (idempotent bei erneutem Aufruf)
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+        "404": { description: Ungültiger/abgelaufener Token }
+
+  /api/v1/admin/auth/login:
+    post:
+      tags: [Admin – Authentisierung]
+      summary: Admin-Login (setzt Session- und CSRF-Cookie)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties: { email: { type: string }, password: { type: string } }
+      responses:
+        "200": { description: OK }
+        "401": { description: Ungültige Anmeldedaten (generische Meldung) }
+
+  /api/v1/admin/auth/logout:
+    post:
+      tags: [Admin – Authentisierung]
+      security: [{ adminSession: [] }]
+      responses:
+        "200": { description: OK }
+
+  /api/v1/admin/auth/session:
+    get:
+      tags: [Admin – Authentisierung]
+      responses:
+        "200": { description: Aktuelle Sitzung }
+        "401": { description: Keine gültige Sitzung }
+
+  /api/v1/admin/reservations:
+    get:
+      tags: [Admin – Reservationen, Kassenintegration]
+      summary: >
+        Reservationsliste mit Cursor-Pagination. Doppelt geschützt: Admin-Session
+        ODER `Authorization: Bearer <api-key>` (zukünftige Kassenintegration).
+      security: [{ adminSession: [] }, { posApiKey: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [PENDING, CONFIRMED, REJECTED, CANCELLED] } }
+        - { name: areaId, in: query, schema: { type: string, format: uuid } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+        - { name: createdAfter, in: query, schema: { type: string, format: date-time } }
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 25 } }
+      responses:
+        "200":
+          description: OK — Shape hängt vom Auth-Weg ab (AdminReservationDto vs. PosReservationDto)
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/CursorPage" } }
+        "401": { description: Keine gültige Session/kein gültiger API-Key }
+
+  /api/v1/admin/reservations/{id}:
+    get:
+      tags: [Admin – Reservationen]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/AdminReservationDto" } }
+        "404": { description: Nicht gefunden }
+
+  /api/v1/admin/reservations/{id}/confirm:
+    post:
+      tags: [Admin – Reservationen]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200": { description: OK }
+        "409": { description: Kein zulässiger Statusübergang / Kapazität nicht mehr ausreichend }
+
+  /api/v1/admin/reservations/{id}/reject:
+    post:
+      tags: [Admin – Reservationen]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string } } }
+      responses:
+        "200": { description: OK }
+        "409": { description: Kein zulässiger Statusübergang }
+
+  /api/v1/admin/reservations/{id}/cancel:
+    post:
+      tags: [Admin – Reservationen]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200": { description: OK }
+        "409": { description: Kein zulässiger Statusübergang }
+
+  /api/v1/admin/areas:
+    get:
+      tags: [Admin – Bereiche]
+      security: [{ adminSession: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Admin – Bereiche]
+      security: [{ adminSession: [] }]
+      responses: { "201": { description: Erstellt } }
+
+  /api/v1/admin/areas/{id}:
+    patch:
+      tags: [Admin – Bereiche]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "200": { description: OK }, "404": { description: Nicht gefunden } }
+
+  /api/v1/admin/blocks:
+    get:
+      tags: [Admin – Sperrungen]
+      security: [{ adminSession: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Admin – Sperrungen]
+      security: [{ adminSession: [] }]
+      responses:
+        "201": { description: Erstellt }
+        "409":
+          description: Konflikt mit bestehenden Reservationen (ohne `acknowledgeConflicts: true`)
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ApiError" } }
+
+  /api/v1/admin/blocks/{id}:
+    patch:
+      tags: [Admin – Sperrungen]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Admin – Sperrungen]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "204": { description: Gelöscht } }
+
+  /api/v1/admin/opening-hours:
+    get:
+      tags: [Admin – Öffnungszeiten]
+      security: [{ adminSession: [] }]
+      responses: { "200": { description: OK } }
+    put:
+      tags: [Admin – Öffnungszeiten]
+      security: [{ adminSession: [] }]
+      summary: Ersetzt die komplette Wochenkonfiguration
+      responses: { "200": { description: OK } }
+
+  /api/v1/admin/special-hours:
+    get:
+      tags: [Admin – Öffnungszeiten]
+      security: [{ adminSession: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Admin – Öffnungszeiten]
+      security: [{ adminSession: [] }]
+      responses: { "201": { description: Erstellt } }
+
+  /api/v1/admin/special-hours/{id}:
+    patch:
+      tags: [Admin – Öffnungszeiten]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Admin – Öffnungszeiten]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "204": { description: Gelöscht } }
+
+  /api/v1/admin/events:
+    get:
+      tags: [Admin – Events]
+      security: [{ adminSession: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Admin – Events]
+      security: [{ adminSession: [] }]
+      responses: { "201": { description: Erstellt } }
+
+  /api/v1/admin/events/{id}:
+    get:
+      tags: [Admin – Events]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "200": { description: OK }, "404": { description: Nicht gefunden } }
+    patch:
+      tags: [Admin – Events]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Admin – Events]
+      security: [{ adminSession: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "204": { description: Gelöscht } }
