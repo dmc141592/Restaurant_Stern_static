@@ -1,0 +1,265 @@
+.hero {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-bordeaux-dark);
+  color: var(--color-text-light);
+  /* 100dvh berücksichtigt mobile Browserleisten; ältere Browser ohne dvh-
+     Unterstützung ignorieren die zweite Deklaration und behalten 100vh. */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 34rem;
+  max-height: 62.5rem;
+}
+
+.mediaLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(120% 90% at 18% 100%, rgba(176, 138, 74, 0.22), transparent 60%),
+    linear-gradient(135deg, var(--color-bordeaux) 0%, var(--color-bordeaux-dark) 68%, #300b13 100%);
+}
+
+.fallbackStar {
+  width: min(38vw, 22rem);
+  height: min(38vw, 22rem);
+  color: var(--color-star-yellow);
+  opacity: 0.06;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-standard);
+}
+
+.videoVisible {
+  opacity: 1;
+}
+
+.scrim {
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video {
+    transition: none;
+  }
+}
+
+/* --- Inhalt: bewusst links unten, nicht zentriert ---------------------------- */
+.content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding-bottom: clamp(2.75rem, 5vw + 1rem, 5.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+
+.contentVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 253, 248, 0.82);
+}
+
+.heading {
+  margin: 0 0 var(--space-3);
+  max-width: 16ch;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-hero);
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--color-text-light);
+}
+
+.subtext {
+  margin: 0 0 var(--space-4);
+  max-width: 34ch;
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  color: rgba(255, 253, 248, 0.9);
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.primaryAction {
+  min-height: 52px;
+  padding-inline: var(--space-5);
+}
+
+.secondaryAction {
+  min-height: 44px;
+  color: var(--color-text-light);
+}
+
+/* --- Musiksteuerung: dezent, unten rechts ------------------------------------ */
+.musicToggle {
+  position: absolute;
+  right: var(--page-margin-inline);
+  bottom: var(--space-4);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 253, 248, 0.4);
+  background: rgba(41, 27, 20, 0.38);
+  color: var(--color-text-light);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .musicToggle {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+
+.musicToggle:hover {
+  background: rgba(41, 27, 20, 0.55);
+  border-color: var(--color-star-yellow);
+}
+
+.musicToggle span {
+  white-space: nowrap;
+}
+
+@media (max-width: 26rem) {
+  /* Auf sehr schmalen Bildschirmen genügt das Icon, der Text bleibt für
+     Screenreader über aria-label erhalten. */
+  .musicToggle span {
+    display: none;
+  }
+}
+
+/* --- Scrollhinweis ------------------------------------------------------------ */
+.scrollHint {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-3);
+  z-index: 2;
+  display: none;
+  transform: translateX(-50%);
+}
+
+@media (min-width: 60rem) {
+  .scrollHint {
+    display: block;
+  }
+}
+
+.scrollHintLine {
+  display: block;
+  width: 1px;
+  height: 34px;
+  background: rgba(255, 253, 248, 0.55);
+  animation: scrollHintMove 2.2s var(--ease-standard) infinite;
+}
+
+@keyframes scrollHintMove {
+  0% {
+    transform: scaleY(0.3);
+    transform-origin: top;
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(0.3);
+    transform-origin: bottom;
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollHintLine {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* Bewusst am oberen Rand des Hero platziert (nicht am unteren): der Header
+   soll kurz nach Scrollbeginn kompakt werden — deutlich bevor der
+   unten-links verankerte Hero-Text in die Höhe des fest positionierten
+   Headers wandert und sich mit ihm überlappen würde. */
+.sentinel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 140px;
+  pointer-events: none;
+}
+
+/* --- Mobil: kompaktere Typografie, Aktionen dürfen umbrechen ------------------ */
+@media (max-width: 30rem) {
+  .heading {
+    max-width: 12ch;
+  }
+
+  .actionsRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .primaryAction {
+    width: 100%;
+    justify-content: center;
+  }
+}

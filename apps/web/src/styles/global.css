@@ -1,24 +1,152 @@
+/* =========================================================================
+   Restaurant Sternen Albisrieden — globales Designsystem
+   Design-Tokens (Farben, Typografie, Abstände, Layout, Bewegung) und
+   globale Grundelemente. Einzige Styling-Architektur des Projekts:
+   diese Tokens plus CSS-Module pro Komponente/Seite.
+   ========================================================================= */
+
 :root {
-  --color-bg: #faf8f5;
-  --color-surface: #ffffff;
-  --color-text: #1a1a1a;
-  --color-muted: #5f5f5f;
-  --color-primary: #1f6f43;
-  --color-primary-contrast: #ffffff;
-  --color-danger: #b3261e;
-  --color-border: #e2ddd3;
-  --font-heading: Georgia, 'Times New Roman', serif;
-  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --radius: 8px;
-  --spacing-1: 4px;
-  --spacing-2: 8px;
-  --spacing-3: 16px;
-  --spacing-4: 24px;
-  --spacing-5: 40px;
+  /* --- Markenfarben ---------------------------------------------------- */
+  --color-bordeaux: #6f1d2c;
+  --color-bordeaux-dark: #48111c;
+  --color-cream: #f7f1e7;
+  --color-beige-light: #ede2d2;
+  --color-gold: #b08a4a;
+  --color-text-dark: #292522;
+  --color-text-light: #fffdf8;
+  --color-white: #ffffff;
+  /* Leuchtendes Sternengelb: nur für das Sternsymbol, sehr kleine
+     Markendetails sowie präzise Hover-/Fokusakzente — nie grossflächig. */
+  --color-star-yellow: #f3e52b;
+
+  /* --- Semantische Tokens ------------------------------------------------
+     Diese Namen werden von neuen Komponenten (Header, Hero, …) verwendet. */
+  --color-page-bg: var(--color-cream);
+  --color-card-bg: var(--color-white);
+  --color-text-primary: var(--color-text-dark);
+  --color-text-secondary: #5c5346;
+  --color-border-subtle: #e3d7c3;
+
+  --color-action-primary-bg: var(--color-bordeaux);
+  --color-action-primary-bg-hover: var(--color-bordeaux-dark);
+  --color-action-primary-text: var(--color-text-light);
+
+  --color-action-secondary-text: var(--color-bordeaux);
+  --color-action-secondary-border: var(--color-bordeaux);
+  --color-action-secondary-text-on-dark: var(--color-text-light);
+  --color-action-secondary-border-on-dark: rgba(255, 253, 248, 0.75);
+
+  /* Bordeaux erreicht auf der cremefarbenen Seite (fast überall im Projekt)
+     zuverlässig AA-Kontrast; Sternengelb allein würde auf hellem Grund kaum
+     sichtbar sein (helle Farbe auf hellem Grund). Für Bedienelemente auf
+     dunklem Grund (Hero-Video, Bordeaux-Flächen) gilt stattdessen die Klasse
+     `.focus-ring-on-dark` weiter unten, die auf Sternengelb umschaltet. */
+  --color-focus-ring: var(--color-bordeaux);
+
+  --color-success: #2f6f4e;
+  --color-warning: #8a5a16;
+  --color-error: #b3261e;
+
+  /* Für Text/Bedienelemente auf Bildern und Video */
+  --color-overlay-scrim-strong: rgba(41, 27, 20, 0.62);
+  --color-overlay-scrim-soft: rgba(41, 27, 20, 0.28);
+
+  /* --- Rückwärtskompatible Aliasse ---------------------------------------
+     Bereits bestehende CSS-Module (Reservationsformular, Adminbereich, …)
+     referenzieren diese Namen. Sie bleiben unverändert benannt, übernehmen
+     aber automatisch das neue Markensystem, statt eine zweite, konkurrierende
+     Farbpalette zu führen. */
+  --color-bg: var(--color-page-bg);
+  --color-surface: var(--color-card-bg);
+  --color-text: var(--color-text-primary);
+  --color-muted: var(--color-text-secondary);
+  --color-border: var(--color-border-subtle);
+  --color-primary: var(--color-action-primary-bg);
+  --color-primary-contrast: var(--color-action-primary-text);
+  --color-danger: var(--color-error);
+
+  /* --- Typografie -------------------------------------------------------- */
+  --font-heading: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, 'Times New Roman',
+    serif;
+  --font-body: 'Source Sans 3 Variable', 'Source Sans 3', system-ui, -apple-system, 'Segoe UI',
+    Roboto, sans-serif;
+
+  /* Fluid Type-Skala: wächst mit der Viewport-Breite zwischen Mobil- und
+     Desktop-Grenzwerten, bleibt aber innerhalb sinnvoller Grenzen lesbar. */
+  --font-size-hero: clamp(2.75rem, 2.05rem + 3.2vw, 5.25rem);
+  --font-size-h1: clamp(2.25rem, 1.9rem + 1.6vw, 3.375rem);
+  --font-size-h2: clamp(1.75rem, 1.55rem + 0.9vw, 2.375rem);
+  --font-size-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.625rem);
+  --font-size-body: clamp(1rem, 0.96rem + 0.15vw, 1.125rem);
+  --font-size-nav: clamp(0.9rem, 0.87rem + 0.12vw, 1rem);
+  --font-size-small: clamp(0.8125rem, 0.8rem + 0.08vw, 0.875rem);
+  --font-size-label: clamp(0.75rem, 0.735rem + 0.06vw, 0.8125rem);
+  --font-size-button: clamp(0.9375rem, 0.92rem + 0.08vw, 1rem);
+
+  --line-height-heading: 1.12;
+  --line-height-body: 1.6;
+
+  /* --- Abstandsskala ------------------------------------------------------ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 40px;
+  --space-6: 64px;
+  --space-7: 96px;
+
+  /* Alte Namen, von bestehenden Modulen verwendet */
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+
+  /* --- Layout -------------------------------------------------------------- */
+  --container-max-width: 1280px;
+  --measure-narrow: 62ch;
+  --page-margin-inline: clamp(1.25rem, 4vw, 4rem);
+  --section-spacing: clamp(3rem, 5vw + 1rem, 7rem);
+
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-lg: 22px;
+  --radius: var(--radius-md); /* alter Name */
+
+  --shadow-sm: 0 1px 2px rgba(41, 37, 34, 0.07), 0 1px 1px rgba(41, 37, 34, 0.05);
+  --shadow-md: 0 10px 28px rgba(41, 37, 34, 0.12), 0 2px 8px rgba(41, 37, 34, 0.06);
+  --shadow-lg: 0 24px 56px rgba(41, 37, 34, 0.18), 0 8px 20px rgba(41, 37, 34, 0.08);
+
+  --z-header: 100;
+  --z-mobile-nav: 200;
+  --z-toast: 300;
+
+  /* Fest positionierter Header: Referenzhöhe im kompakten (hellen) Zustand.
+     Seiten ohne Hero reservieren genau diesen Platz oben, damit nichts
+     darunter verdeckt wird; auf der Startseite übernimmt der Hero selbst
+     die volle Höhe, der Header schwebt dort transparent darüber. */
+  --header-height-compact: 84px;
+
+  /* --- Bewegung -------------------------------------------------------------- */
+  --duration-fast: 150ms;
+  --duration-base: 260ms;
+  --duration-slow: 480ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-* {
+/* =========================================================================
+   Reset & Basis
+   ========================================================================= */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 html,
@@ -28,26 +156,189 @@ body {
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--color-page-bg);
+  color: var(--color-text-primary);
   font-family: var(--font-body);
-  line-height: 1.5;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  /* Verhindert horizontales Scrollen, u. a. durch den vollflächigen Hero. */
+  overflow-x: hidden;
 }
+
+img,
+video {
+  max-width: 100%;
+  display: block;
+}
+
+/* =========================================================================
+   Typografie
+   ========================================================================= */
 
 h1,
 h2,
 h3,
 h4 {
   font-family: var(--font-heading);
-  line-height: 1.2;
+  font-weight: 600;
+  line-height: var(--line-height-heading);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-3);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+}
+
+p {
+  margin: 0 0 var(--space-3);
+  max-width: var(--measure-narrow);
+}
+
+small {
+  font-size: var(--font-size-small);
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--color-action-primary-bg);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+a:hover {
+  color: var(--color-bordeaux-dark);
 }
 
 button {
   font-family: inherit;
+}
+
+/* =========================================================================
+   Buttons
+   ========================================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-size-button);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+  border-color: var(--color-action-primary-bg);
+}
+
+.btn-primary:hover {
+  background: var(--color-action-primary-bg-hover);
+  border-color: var(--color-action-primary-bg-hover);
+  color: var(--color-action-primary-text);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-action-secondary-text);
+  border-color: var(--color-action-secondary-border);
+}
+
+.btn-secondary:hover {
+  background: rgba(111, 29, 44, 0.06);
+}
+
+/* Modifikator für sekundäre Buttons auf dunklem Grund (z. B. über dem Hero-Video). */
+.btn-secondary-on-dark {
+  background: transparent;
+  color: var(--color-action-secondary-text-on-dark);
+  border-color: var(--color-action-secondary-border-on-dark);
+}
+
+.btn-secondary-on-dark:hover {
+  background: rgba(255, 253, 248, 0.12);
+  border-color: var(--color-text-light);
+  color: var(--color-text-light);
+}
+
+/* Zurückhaltender Textlink mit kleiner Pfeilbewegung bei Hover/Fokus. */
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+}
+
+.link-arrow svg {
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.link-arrow:hover svg,
+.link-arrow:focus-visible svg {
+  transform: translateX(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link-arrow svg {
+    transition: none;
+  }
+}
+
+/* =========================================================================
+   Fokuszustände
+   ========================================================================= */
+
+:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* Sternengelb bietet auf dunklen Flächen (Hero-Video, Bordeaux) nicht immer
+   genug Eigenkontrast als Umriss allein — ein dunkler Halo sichert AA-Kontrast
+   in beide Richtungen, ohne die Akzentfarbe zu verwässern. */
+.focus-ring-on-dark:focus-visible {
+  outline-color: var(--color-star-yellow);
+  box-shadow: 0 0 0 3px rgba(41, 27, 20, 0.55);
+}
+
+/* =========================================================================
+   Layout-Hilfsklassen
+   ========================================================================= */
+
+.container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin-inline: auto;
+  padding-inline: var(--page-margin-inline);
 }
 
 .visually-hidden {
@@ -60,17 +351,43 @@ button {
 }
 
 .skip-link:focus {
-  position: static;
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
   width: auto;
   height: auto;
   clip: auto;
+  z-index: var(--z-toast);
   display: inline-block;
-  padding: var(--spacing-2);
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bordeaux);
+  color: var(--color-text-light);
+  border-radius: var(--radius-sm);
 }
 
-:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
+/* Verhindert Hintergrundscrollen, während das mobile Menü geöffnet ist. */
+.scroll-locked {
+  overflow: hidden;
+  height: 100%;
+}
+
+/* =========================================================================
+   Medien-Overlays
+   Wiederverwendbare Abdunkelung für Text auf Bildern/Videos — zurückhaltend
+   genug, damit warme, echte Aufnahmen ihren Charakter behalten.
+   ========================================================================= */
+
+.media-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.media-overlay-bottom {
+  background: linear-gradient(
+    to top,
+    var(--color-overlay-scrim-strong) 0%,
+    rgba(41, 27, 20, 0.28) 32%,
+    rgba(41, 27, 20, 0) 62%
+  );
 }

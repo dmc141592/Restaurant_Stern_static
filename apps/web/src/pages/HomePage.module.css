@@ -1,0 +1,6 @@
+/* Bewahrt nur Container/Abstand für den bestehenden Platzhaltertext unterhalb
+   des neuen Hero — der Abschnitt selbst wird in diesem Schritt noch nicht
+   gestalterisch überarbeitet. */
+.placeholderSection {
+  padding-block: var(--section-spacing);
+}

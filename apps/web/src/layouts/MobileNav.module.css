@@ -1,0 +1,108 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-mobile-nav);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bordeaux-dark);
+  color: var(--color-text-light);
+  animation: fadeIn var(--duration-base) var(--ease-out);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    animation: none;
+  }
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: var(--space-3);
+  flex-shrink: 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.brandStar {
+  color: var(--color-star-yellow);
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-light);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+/* Bewusst zentrierter Kontrast zum sonst asymmetrischen, editorialen Layout —
+   für ein bildschirmfüllendes Menü-Overlay ein passender, ruhiger Rahmen. */
+.navWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--page-margin-inline) var(--space-6);
+  overflow-y: auto;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.link {
+  display: inline-block;
+  padding: var(--space-2) var(--space-2);
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 1.3rem + 2vw, 2.25rem);
+  font-weight: 500;
+  color: var(--color-text-light);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--color-star-yellow);
+}
+
+.linkActive {
+  color: var(--color-star-yellow);
+}
+
+.reserveButton {
+  min-height: 48px;
+  padding-inline: var(--space-5);
+}

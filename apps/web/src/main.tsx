@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.js';
+// Selbst gehostete Variable Fonts (kein externer Google-Fonts-Request nötig).
+import '@fontsource-variable/cormorant-garamond';
+import '@fontsource-variable/source-sans-3';
 import './styles/global.css';
 
 const queryClient = new QueryClient({

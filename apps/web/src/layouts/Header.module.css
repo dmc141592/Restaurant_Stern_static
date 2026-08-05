@@ -1,0 +1,236 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  min-height: var(--header-height-compact);
+  display: flex;
+  align-items: stretch;
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard);
+}
+
+.inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+}
+
+/* --- Transparenter Ausgangszustand über dem Hero-Video --------------------- */
+.headerTransparent {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+}
+
+/* Sehr weicher Verlauf hinter dem transparenten Header, rein zur
+   Lesbarkeitssicherung über hellen Videoausschnitten — keine dominante
+   Fläche, verschwindet nach wenigen Pixeln nach unten. */
+.headerTransparent::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to bottom, rgba(20, 12, 8, 0.38), rgba(20, 12, 8, 0));
+  pointer-events: none;
+}
+
+.headerTransparent .logo,
+.headerTransparent .navLink {
+  color: var(--color-text-light);
+}
+
+.headerTransparent .navLink::after {
+  background: var(--color-text-light);
+}
+
+.headerTransparent .menuButton {
+  color: var(--color-text-light);
+}
+
+/* --- Kompakter, heller Zustand nach dem Scrollen / auf Unterseiten --------- */
+.headerSolid {
+  background: rgba(247, 241, 231, 0.92);
+  border-bottom: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .headerSolid {
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+}
+
+.headerSolid .logo,
+.headerSolid .navLink {
+  color: var(--color-text-primary);
+}
+
+.headerSolid .navLink::after {
+  background: var(--color-bordeaux);
+}
+
+.headerSolid .menuButton {
+  color: var(--color-text-primary);
+}
+
+/* --- Logo / Marke ----------------------------------------------------------- */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-heading);
+  font-size: clamp(1.05rem, 1rem + 0.4vw, 1.375rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: color var(--duration-base) var(--ease-standard);
+  white-space: nowrap;
+}
+
+.logoStar {
+  color: var(--color-star-yellow);
+  flex-shrink: 0;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.logo:hover .logoStar {
+  transform: rotate(20deg) scale(1.1);
+}
+
+.logoWordFull {
+  display: none;
+}
+
+.logoWordShort {
+  display: inline;
+}
+
+@media (min-width: 30rem) {
+  .logoWordFull {
+    display: inline;
+  }
+  .logoWordShort {
+    display: none;
+  }
+}
+
+/* --- Hauptnavigation (Desktop) ---------------------------------------------- */
+.nav {
+  display: none;
+}
+
+@media (min-width: 60rem) {
+  .nav {
+    display: block;
+  }
+}
+
+.nav ul {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  position: relative;
+  display: inline-block;
+  padding-block: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--font-size-nav);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: color var(--duration-base) var(--ease-standard);
+}
+
+/* Ruhige Linienbewegung statt lauter Hover-Effekte. */
+.navLink::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 1px;
+  transition: right var(--duration-base) var(--ease-out);
+}
+
+.navLink:hover::after,
+.navLink:focus-visible::after,
+.navLinkActive::after {
+  right: 0;
+}
+
+.navLinkActive {
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navLink::after {
+    transition: none;
+  }
+  .logoStar {
+    transition: none;
+  }
+}
+
+/* --- Aktionen (Reservation + mobiler Menübutton) ---------------------------- */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.reserveButton {
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  white-space: nowrap;
+}
+
+.reserveButtonTextFull {
+  display: none;
+}
+
+.reserveButtonTextShort {
+  display: inline;
+}
+
+@media (min-width: 30rem) {
+  .reserveButtonTextFull {
+    display: inline;
+  }
+  .reserveButtonTextShort {
+    display: none;
+  }
+}
+
+.menuButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-base) var(--ease-standard);
+}
+
+@media (min-width: 60rem) {
+  .menuButton {
+    display: none;
+  }
+}
