@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import CulinarySection from '../features/home/CulinarySection.js';
 import HeroSection from '../features/home/HeroSection.js';
 import styles from './HomePage.module.css';
 
@@ -6,6 +7,7 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
+      <CulinarySection />
 
       {/* Bestehender Platzhalterinhalt bleibt erreichbar; das Redesign der
           übrigen Startseitenabschnitte folgt in einem späteren Schritt. */}
